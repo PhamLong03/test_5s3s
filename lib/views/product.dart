@@ -4,14 +4,10 @@ class Products extends StatelessWidget {
   const Products({
     super.key,
     required this.name,
-    required this.description,
     required this.thumbnail,
-    required this.id,
     required this.callback,
   });
-  final String id;
   final String name;
-  final String description;
   final String thumbnail;
   final Function() callback;
 
@@ -38,13 +34,6 @@ class Products extends StatelessWidget {
                 children: [
                   Text(
                     name,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontSize: 20),
-                  ),
-                  Text(
-                    'Id: $id',
                     style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.white,

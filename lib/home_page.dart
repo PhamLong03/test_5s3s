@@ -1,11 +1,10 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:test_5s3s/Custom_Widgets/function_button.dart';
 import 'package:test_5s3s/Custom_Widgets/function_button_icon.dart';
-import 'package:test_5s3s/controllers/fetchAllMealCategories.dart';
+import 'package:test_5s3s/controllers/fetchDataHttp.dart';
 import 'package:test_5s3s/models/category.dart';
+import 'package:test_5s3s/models/meal.dart';
 import 'package:test_5s3s/views/cart.dart';
 import 'package:test_5s3s/views/product.dart';
 
@@ -17,8 +16,30 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  CategoriesController categoriesController = Get.put(CategoriesController());
-  List<Category> categories = [];
+  late List<Category> categories = [];
+  late List<Meal> meals = [];
+  List<String> categoryList = ['Beef'];
+  late List<Meal> mealsCard = [];
+  late String category = categoryList.first;
+  initalizeList() {
+    fetchMealByCategory('Beef').then((value) {
+      meals = value;
+      print(meals);
+    });
+    fetchCategories().then((value) {
+      categories = value;
+      for (int i = 1; i < value.length; i++) {
+        categoryList.add(value[i].strCategory);
+      }
+      category = categoryList.first;
+    });
+  }
+
+  @override
+  void initState() {
+    initalizeList();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -163,71 +184,74 @@ class _MyHomePageState extends State<MyHomePage> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  const Row(
+                  Row(
                     children: [
-                      FunctionButton(
+                      const FunctionButton(
                         text: 'All',
                         color: Colors.grey,
                       ),
-                      FunctionButton(text: 'On sale'),
-                      FunctionButton(text: 'Featured'),
-                      FunctionButtonIcon(
+                      const FunctionButton(text: 'On sale'),
+                      const FunctionButton(text: 'Featured'),
+                      const FunctionButtonIcon(
                         text: 'Add product',
                         icon: Icons.add,
                         isRow: true,
                       ),
-                      FunctionButtonIcon(
+                      const FunctionButtonIcon(
                         text: 'Scan product',
                         icon: Icons.qr_code,
                         isRow: true,
-                      )
+                      ),
+                      DropdownButton<String>(
+                        value: category,
+                        icon: const Icon(Icons.arrow_downward),
+                        elevation: 16,
+                        style: const TextStyle(color: Colors.deepPurple),
+                        underline: Container(
+                          height: 2,
+                          color: Colors.deepPurpleAccent,
+                        ),
+                        onChanged: (String? value) {
+                          setState(() {
+                            category = value!;
+                            fetchMealByCategory(category).then((value) {
+                              meals = value;
+                            });
+                          });
+                        },
+                        items: categoryList
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                      ),
                     ],
                   ),
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.all(20),
                       color: Colors.grey[400],
-                      child: Obx(
-                        () => categoriesController.isLoading == true
-                            ? const Center(child: CircularProgressIndicator())
-                            : GridView.builder(
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 3,
-                                        crossAxisSpacing: 20,
-                                        mainAxisSpacing: 20,
-                                        childAspectRatio: 1.3),
-                                itemCount: categoriesController
-                                    .categoryModel?.categories?.length,
-                                itemBuilder: (context, index) {
-                                  return Products(
-                                    name: categoriesController.categoryModel
-                                            ?.categories![index].strCategory ??
-                                        'no',
-                                    description: categoriesController
-                                            .categoryModel
-                                            ?.categories![index]
-                                            .strCategoryDescription ??
-                                        'no',
-                                    thumbnail: categoriesController
-                                            .categoryModel
-                                            ?.categories![index]
-                                            .strCategoryThumb ??
-                                        'no',
-                                    id: categoriesController.categoryModel
-                                            ?.categories![index].idCategory ??
-                                        'no',
-                                    callback: () => {
-                                      setState(() {
-                                        categories.add(categoriesController
-                                            .categoryModel!.categories![index]);
-                                        categories =
-                                            categories.toSet().toList();
-                                      }),
-                                    },
-                                  );
-                                },
-                              ),
+                      child: GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                crossAxisSpacing: 20,
+                                mainAxisSpacing: 20,
+                                childAspectRatio: 1.3),
+                        itemCount: meals.length,
+                        itemBuilder: (context, index) {
+                          return Products(
+                            name: meals[index].strMeal,
+                            thumbnail: meals[index].strMealThumb,
+                            callback: () => {
+                              setState(() {
+                                mealsCard.add(meals[index]);
+                              }),
+                            },
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -274,15 +298,15 @@ class _MyHomePageState extends State<MyHomePage> {
                       height: MediaQuery.of(context).size.height / 7 * 5,
                       width: MediaQuery.of(context).size.width / 2,
                       child: ListView.builder(
-                        itemCount: categories.length,
+                        itemCount: mealsCard.length,
                         itemBuilder: (context, index) {
                           return ProductCard(
-                            text: categories[index].strCategory,
-                            img: categories[index].strCategoryThumb,
-                            id: categories[index].idCategory,
+                            text: mealsCard[index].strMeal,
+                            img: mealsCard[index].strMealThumb,
+                            id: mealsCard[index].idMeal,
                             onRemove: () {
                               setState(() {
-                                categories.remove(categories[index]);
+                                mealsCard.remove(mealsCard[index]);
                               });
                             },
                           );
@@ -293,44 +317,44 @@ class _MyHomePageState extends State<MyHomePage> {
                   Expanded(
                     child: Row(
                       children: [
-                        FunctionButtonIcon(
+                        const FunctionButtonIcon(
                           text: "ADD NOTE",
                           icon: Icons.message,
                           color: Colors.black54,
                           isRow: false,
                         ),
-                        FunctionButtonIcon(
+                        const FunctionButtonIcon(
                           text: "ADD FEE OR DISCOUNT",
                           icon: Icons.add,
-                          color: const Color.fromARGB(255, 9, 173, 170),
+                          color: Color.fromARGB(255, 9, 173, 170),
                           isRow: false,
                         ),
-                        FunctionButtonIcon(
+                        const FunctionButtonIcon(
                           text: "APPLY COUPON",
                           icon: Icons.card_giftcard,
-                          color: const Color.fromARGB(255, 9, 173, 170),
+                          color: Color.fromARGB(255, 9, 173, 170),
                           isRow: false,
                         ),
-                        FunctionButtonIcon(
+                        const FunctionButtonIcon(
                           text: "SHIPPING",
                           icon: Icons.local_shipping,
-                          color: const Color.fromARGB(255, 9, 173, 170),
+                          color: Color.fromARGB(255, 9, 173, 170),
                           isRow: false,
                         ),
-                        FunctionButtonIcon(
+                        const FunctionButtonIcon(
                           text: "SUSPEND & SAVE CART",
                           icon: Icons.shopping_cart,
-                          color: const Color.fromARGB(255, 224, 153, 20),
+                          color: Color.fromARGB(255, 224, 153, 20),
                           isRow: false,
                         ),
                         Container(
-                          padding: EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                             vertical: 25,
                             horizontal: 85,
                           ),
-                          margin: EdgeInsets.only(left: 10, right: 10),
-                          color: Color.fromARGB(255, 160, 167, 0),
-                          child: FunctionButton(
+                          margin: const EdgeInsets.only(left: 10, right: 10),
+                          color: const Color.fromARGB(255, 160, 167, 0),
+                          child: const FunctionButton(
                             text: 'PAY',
                             color: Color.fromARGB(255, 160, 167, 0),
                           ),
