@@ -29,9 +29,7 @@ class _FunctionButtonIconState extends State<FunctionButtonIcon> {
           ? Container(
               margin: const EdgeInsets.only(right: 2),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              color: widget.color != null
-                  ? widget.color
-                  : const Color.fromARGB(255, 9, 173, 170),
+              color: widget.color ?? const Color.fromARGB(255, 9, 173, 170),
               child: Row(children: [
                 Icon(
                   widget.icon,
@@ -45,7 +43,7 @@ class _FunctionButtonIconState extends State<FunctionButtonIcon> {
               height: 90,
               width: 130,
               color: widget.color,
-              margin: EdgeInsets.only(left: 10),
+              margin: const EdgeInsets.only(left: 10),
               child: Container(
                 margin: const EdgeInsets.only(top: 25),
                 child: Column(

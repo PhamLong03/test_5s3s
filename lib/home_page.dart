@@ -2,8 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:test_5s3s/Custom_Widgets/function_button.dart';
 import 'package:test_5s3s/Custom_Widgets/function_button_icon.dart';
-import 'package:test_5s3s/controllers/fetchDataHttp.dart';
-import 'package:test_5s3s/models/category.dart';
+import 'package:test_5s3s/controllers/fetch_data_http.dart';
 import 'package:test_5s3s/models/meal.dart';
 import 'package:test_5s3s/views/cart.dart';
 import 'package:test_5s3s/views/product.dart';
@@ -16,29 +15,19 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late List<Category> categories = [];
-  late List<Meal> meals = [];
   List<String> categoryList = ['Beef'];
   late List<Meal> mealsCard = [];
   late String category = categoryList.first;
-  initalizeList() {
-    fetchMealByCategory('Beef').then((value) {
-      meals = value;
-      print(meals);
-    });
+  late Future<List<Meal>> meals;
+  @override
+  void initState() {
+    super.initState();
+    meals = fetchMealByCategory('Beef');
     fetchCategories().then((value) {
-      categories = value;
       for (int i = 1; i < value.length; i++) {
         categoryList.add(value[i].strCategory);
       }
-      category = categoryList.first;
     });
-  }
-
-  @override
-  void initState() {
-    initalizeList();
-    super.initState();
   }
 
   @override
@@ -120,7 +109,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       height: 35,
                       width: 40,
                       color: Colors.grey,
-                      padding: EdgeInsetsDirectional.only(),
+                      padding: const EdgeInsetsDirectional.only(),
                       child: const Icon(
                         Icons.person,
                         size: 40,
@@ -150,112 +139,122 @@ class _MyHomePageState extends State<MyHomePage> {
         color: Colors.blueAccent,
         child: Row(
           children: [
-            Container(
-              height: MediaQuery.of(context).size.height,
-              width: MediaQuery.of(context).size.width / 2,
-              color: Colors.white,
-              child: Column(
-                children: [
-                  const SizedBox(height: 20),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      const Text('point of sale '),
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width / 3,
-                        child: const TextField(
-                          style: TextStyle(fontSize: 15),
-                          decoration: InputDecoration(
-                            isDense: true,
-                            contentPadding: EdgeInsets.all(10),
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.zero),
+            SingleChildScrollView(
+              child: Container(
+                height: MediaQuery.of(context).size.height,
+                width: MediaQuery.of(context).size.width / 2,
+                color: Colors.white,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        const Text('point of sale '),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width / 3,
+                          child: const TextField(
+                            style: TextStyle(fontSize: 15),
+                            decoration: InputDecoration(
+                              isDense: true,
+                              contentPadding: EdgeInsets.all(10),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.zero),
+                            ),
+                            selectionHeightStyle: BoxHeightStyle.tight,
                           ),
-                          selectionHeightStyle: BoxHeightStyle.tight,
                         ),
-                      ),
-                      Container(
-                        height: 40,
-                        width: 40,
-                        color: const Color.fromARGB(255, 67, 87, 86),
-                        child: const Icon(Icons.qr_code, color: Colors.white),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      const FunctionButton(
-                        text: 'All',
-                        color: Colors.grey,
-                      ),
-                      const FunctionButton(text: 'On sale'),
-                      const FunctionButton(text: 'Featured'),
-                      const FunctionButtonIcon(
-                        text: 'Add product',
-                        icon: Icons.add,
-                        isRow: true,
-                      ),
-                      const FunctionButtonIcon(
-                        text: 'Scan product',
-                        icon: Icons.qr_code,
-                        isRow: true,
-                      ),
-                      DropdownButton<String>(
-                        value: category,
-                        icon: const Icon(Icons.arrow_downward),
-                        elevation: 16,
-                        style: const TextStyle(color: Colors.deepPurple),
-                        underline: Container(
-                          height: 2,
-                          color: Colors.deepPurpleAccent,
+                        Container(
+                          height: 40,
+                          width: 40,
+                          color: const Color.fromARGB(255, 67, 87, 86),
+                          child: const Icon(Icons.qr_code, color: Colors.white),
+                        )
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        const FunctionButton(
+                          text: 'All',
+                          color: Colors.grey,
                         ),
-                        onChanged: (String? value) {
-                          setState(() {
-                            category = value!;
-                            fetchMealByCategory(category).then((value) {
-                              meals = value;
+                        const FunctionButton(text: 'On sale'),
+                        const FunctionButton(text: 'Featured'),
+                        const FunctionButtonIcon(
+                          text: 'Add product',
+                          icon: Icons.add,
+                          isRow: true,
+                        ),
+                        const FunctionButtonIcon(
+                          text: 'Scan product',
+                          icon: Icons.qr_code,
+                          isRow: true,
+                        ),
+                        DropdownButton<String>(
+                          value: category,
+                          icon: const Icon(Icons.arrow_downward),
+                          elevation: 16,
+                          style: const TextStyle(color: Colors.deepPurple),
+                          underline: Container(
+                            height: 2,
+                            color: Colors.deepPurpleAccent,
+                          ),
+                          onChanged: (String? value) async {
+                            setState(() {
+                              category = value!;
+                              meals = fetchMealByCategory(category);
                             });
-                          });
-                        },
-                        items: categoryList
-                            .map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                      ),
-                    ],
-                  ),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      color: Colors.grey[400],
-                      child: GridView.builder(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 3,
-                                crossAxisSpacing: 20,
-                                mainAxisSpacing: 20,
-                                childAspectRatio: 1.3),
-                        itemCount: meals.length,
-                        itemBuilder: (context, index) {
-                          return Products(
-                            name: meals[index].strMeal,
-                            thumbnail: meals[index].strMealThumb,
-                            callback: () => {
-                              setState(() {
-                                mealsCard.add(meals[index]);
-                              }),
-                            },
-                          );
-                        },
+                          },
+                          items: categoryList
+                              .map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        color: Colors.grey[400],
+                        child: FutureBuilder(
+                          future: meals,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              return GridView.builder(
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 3,
+                                        crossAxisSpacing: 20,
+                                        mainAxisSpacing: 20,
+                                        childAspectRatio: 1.3),
+                                itemCount: snapshot.data!.length,
+                                itemBuilder: (context, index) {
+                                  return Products(
+                                    name: snapshot.data![index].strMeal,
+                                    thumbnail:
+                                        snapshot.data![index].strMealThumb,
+                                    callback: () => {
+                                      setState(() {
+                                        mealsCard.add(snapshot.data![index]);
+                                      }),
+                                    },
+                                  );
+                                },
+                              );
+                            } else {
+                              return const CircularProgressIndicator();
+                            }
+                          },
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             Container(

@@ -1,3 +1,4 @@
+// ignore: file_names
 import 'dart:convert';
 import 'package:test_5s3s/models/category.dart';
 import 'package:http/http.dart' as http;
@@ -9,12 +10,10 @@ Future<List<Category>> fetchCategories() async {
   final data = json.decode(response.body);
   final List<dynamic> categoryList = data['categories'];
   final List<Category> categories = [];
-  categoryList.forEach(
-    (element) {
-      final Category album = Category.fromJson(element);
-      categories.add(album);
-    },
-  );
+  for (var element in categoryList) {
+    final Category album = Category.fromJson(element);
+    categories.add(album);
+  }
 
   if (response.statusCode == 200) {
     return categories;
@@ -29,12 +28,10 @@ Future<List<Meal>> fetchMealByCategory(String category) async {
   final data = json.decode(response.body);
   final List<dynamic> meals = data['meals'];
   final List<Meal> categories = [];
-  meals.forEach(
-    (element) {
-      final Meal meal = Meal.fromJson(element);
-      categories.add(meal);
-    },
-  );
+  for (var element in meals) {
+    final Meal meal = Meal.fromJson(element);
+    categories.add(meal);
+  }
 
   if (response.statusCode == 200) {
     return categories;

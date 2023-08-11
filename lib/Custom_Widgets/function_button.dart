@@ -23,9 +23,7 @@ class _FunctionButtonState extends State<FunctionButton> {
       child: Container(
         margin: const EdgeInsets.only(right: 2),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        color: widget.color != null
-            ? widget.color
-            : const Color.fromARGB(255, 9, 173, 170),
+        color: widget.color ?? const Color.fromARGB(255, 9, 173, 170),
         child: Text(widget.text),
       ),
     );

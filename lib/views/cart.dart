@@ -61,7 +61,7 @@ class _ProductCardState extends State<ProductCard> {
               ],
             ),
           ),
-          SizedBox(width: 100),
+          const SizedBox(width: 100),
           SizedBox(
             width: 350,
             child: Row(
